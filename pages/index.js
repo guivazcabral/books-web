@@ -7,6 +7,7 @@ import Link from 'next/link'
 
 const Home = () => {
   const [books, setBooks] = useState([])
+  const [totalBooks, setTotalBooks] = useState(null)
   const [page, setPage] = useState(1)
   const [loadMore, setLoadMore] = useState(true)
 
@@ -29,20 +30,13 @@ const Home = () => {
     })
   }, [])
 
-  useEffect(() => {
-    const list = document.getElementById('list')
-
-    if (list.clientHeight <= window.innerHeight && list.clientHeight) {
-      setLoadMore(true)
-    }
-  }, [books])
-
   const getData = async (search, page) => {
+    setLoadMore(false)
     const query = qs.stringify({ ...search, page })
     const response = await axios.get(`${ process.env.API_URL }/books?${ query }`)
-    setBooks([...books, ...response.data])
+    setBooks([...books, ...response.data.data])
+    setTotalBooks(response.data.total)
     setPage(page + 1)
-    setLoadMore(false)
   }
 
   const handleChange = ({ target }) => {
@@ -69,6 +63,16 @@ const Home = () => {
             </div>
             <div className="column">
               <input className="input" type="text" placeholder="Author" name="author" onChange={ handleChange }/>
+            </div>
+          </div>
+          <div className="columns is-vcentered">
+            <div className="column is-narrow">
+              <Link href={ `/book/add` }><a className="button">Add new book</a></Link>
+            </div>
+            <div className="column is-narrow">
+              { totalBooks !== null
+                && <>{ totalBooks } { totalBooks === 1 ? 'book' : 'books' }</>
+              }
             </div>
           </div>
         </section>
